@@ -5,11 +5,11 @@
 Setup environment: 
 
 - python3.6
-- install required python libs: ```pip3 install -r requirement.txt```
+- install required python libs: ```pip3 install -r requirements.txt```
 
 ## Usage
 
-Run the main script:
+Run the main script in the src folder:
 
 ```
 python3 subimg.py /path/to/image1.jpg /path/to/image2.jpg
@@ -34,4 +34,4 @@ By the natural of opencv template matching implementation, it can not handle fol
 
 1. rescaled or rotated crops
 1. jitters: multiple top left for single object
-1. similar objects with different colors since it take grey image (single channel) as input
+1. similar objects with different colors since the opencv matchTemplate function takes grey image (single channel) as input
