@@ -10,13 +10,14 @@ import numpy as np
 from PIL import Image
 import cv2
 import itertools
-from subimg import cv2_find_sub_img
+from subimg import cv2_find_subimg
 import pprint
 from utils import load_img_file
 
 def _generate_pairs(img_folder, less_flag=True):
     assert (path.exists(img_folder))
     img_paths = glob(path.join(img_folder, '*.jpg'))
+    img_paths.sort()
     # template_paths = glob(path.join(img_folder, 'crop-*.jpg'))
 
     if less_flag:
@@ -50,7 +51,7 @@ def test(input_dir, output_dir):
             continue
 
         try:
-            bbox_list, out = cv2_find_sub_img(res['image_path'], res['template_path'], threshold=0.9, viz_flag=True)
+            bbox_list, out = cv2_find_subimg(res['image_path'], res['template_path'], threshold=0.94, viz_flag=True)
         except:
             res['error'] = True
             res_lines.append(res)

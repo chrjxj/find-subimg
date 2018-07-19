@@ -13,8 +13,9 @@ from utils import load_img_file
 # from cnn_detector import CnnDetector
 
 
-def cv2_find_sub_img(img_path, template_path, threshold=0.9, viz_flag=False):
-    ''' Match the cropped image (template) in the
+def cv2_find_subimg(img_path, template_path, threshold=0.9, viz_flag=False):
+    ''' Find the cropped image (template) image in another image (specified by image_path).
+    If found, return bounding boxes.
 
     :param img_path: str, image path (image with bigger size)
     :param template_path: str, image path (image with smaller size)
@@ -22,36 +23,25 @@ def cv2_find_sub_img(img_path, template_path, threshold=0.9, viz_flag=False):
     :param viz_flag: bool, save the plot for debug or not
     :return: a list of bounding box, and an image object
     '''
-
     img_rgb = cv2.imread(img_path)
-    img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
-    template = cv2.imread(template_path, 0)
+    template = cv2.imread(template_path)
+    assert (img_rgb.shape[2] == 3 and template.shape[2] == 3)
+    res0 = cv2.matchTemplate(img_rgb[:, :, 0], template[:, :, 0], cv2.TM_CCOEFF_NORMED)
+    res1 = cv2.matchTemplate(img_rgb[:, :, 1], template[:, :, 1], cv2.TM_CCOEFF_NORMED)
+    res2 = cv2.matchTemplate(img_rgb[:, :, 2], template[:, :, 2], cv2.TM_CCOEFF_NORMED)
 
-    try:
-        res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
-    except Exception as e:
-        print('cv2.matchTemplate raise exception when processing img: {} and template: {}'.format(img_path,
-                                                                                                  template_path))
-        raise
-
+    res = (res0 + res1 + res2)/3.
     loc = np.where(res >= threshold)
     top_left_list = [pt for pt in zip(*loc[::-1])]
 
-    # combine/smooth close (x.y) dots into one topleft tuple
-    factor = min(img_gray.shape[::-1])/50.
-    if len(top_left_list) > 0:
-        arr = (np.array(top_left_list) /factor).astype(int) * int(factor)
-        top_left_list = set(map(tuple, arr))
-
-    w, h = template.shape[::-1]
+    h, w, _ = template.shape
     bbox_list = [(x[0], x[1], w, h) for x in top_left_list]
 
     if viz_flag:
         for pt in top_left_list:
-            cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
+            cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0, 0, 255))
 
     return bbox_list, img_rgb
-
 
 if __name__ == '__main__':
 
@@ -84,7 +74,7 @@ if __name__ == '__main__':
         raise NotImplementedError('Reserve CNN version of template matching for future implementation.')
     else:
         try:
-            bbox_list, _ = cv2_find_sub_img(original_img, template_img, viz_flag=True)
+            bbox_list, _ = cv2_find_subimg(original_img, template_img, viz_flag=True)
         except:
             raise
         res = dict()
